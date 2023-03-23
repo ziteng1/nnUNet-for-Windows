@@ -249,14 +249,15 @@ def predict_cases(model, list_of_lists, output_filenames, folds, save_npz, num_t
         patching system python code. We circumvent that problem here by saving softmax_pred to a npy file that will 
         then be read (and finally deleted) by the Process. save_segmentation_nifti_from_softmax can take either 
         filename or np.ndarray and will handle this automatically"""
-        bytes_per_voxel = 4
-        if all_in_gpu:
-            bytes_per_voxel = 2  # if all_in_gpu then the return value is half (float16)
-        if np.prod(softmax_mean.shape) > (2e9 / bytes_per_voxel * 0.85):  # * 0.85 just to be save
-            print(
-                "This output is too large for python process-process communication. Saving output temporarily to disk")
-            np.save(output_filename[:-7] + ".npy", softmax_mean)
-            softmax_mean = output_filename[:-7] + ".npy"
+        # bytes_per_voxel = 4
+        # if all_in_gpu:
+        #     bytes_per_voxel = 2  # if all_in_gpu then the return value is half (float16)
+        # if np.prod(softmax_mean.shape) > (2e9 / bytes_per_voxel * 0.85):  # * 0.85 just to be save
+        #     print(
+        #         "This output is too large for python process-process communication. Saving output temporarily to disk")
+        # added my Ziteng: always do the following
+        np.save(output_filename[:-7] + ".npy", softmax_mean)
+        softmax_mean = output_filename[:-7] + ".npy"
 
         results.append(pool.starmap_async(save_segmentation_nifti_from_softmax,
                                           ((softmax_mean, output_filename, dct, interpolation_order, region_class_order,
